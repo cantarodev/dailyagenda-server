@@ -9,7 +9,7 @@ const {
 
 const router = app.Router();
 
-router.get("/:userEmail", getTodos);
+router.get("/:userEmail/:status", getTodos);
 
 router.post("/", createTodo);
 

@@ -4,11 +4,16 @@ const { v4: uuidv4 } = require("uuid");
 
 // get all todos
 const getTodos = async (req, res) => {
-  const { userEmail } = req.params;
+  const { userEmail, status } = req.params;
   try {
+    let queryStatus = "";
+    let valueConditions = [userEmail];
+    status !== "all" &&
+      ((queryStatus = "AND status = ?"), valueConditions.push(status));
+
     const [rows] = await pool.query(
-      "SELECT * FROM todos WHERE user_email = ?",
-      [userEmail]
+      `SELECT * FROM todos WHERE user_email = ? ${queryStatus} ORDER BY date`,
+      [...valueConditions]
     );
     res.json(rows);
   } catch (error) {
