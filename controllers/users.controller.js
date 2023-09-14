@@ -1,9 +1,6 @@
 const pool = require("../database/database.js"); // módulo - conexiones a la database
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const notifier = require("node-notifier");
-const path = require("path");
-const openurl = require("openurl");
 
 // register user
 const signupUser = async (req, res) => {
@@ -41,17 +38,6 @@ const loginUser = async (req, res) => {
 
     if (success) {
       res.json({ email: rows[0].email, token });
-      setInterval(async () => {
-        const [results] = await pool.query(
-          "SELECT * FROM todos WHERE user_email = ? AND date <= NOW() AND notified = 0",
-          [rows[0].email]
-        );
-        if (results.length > 0) {
-          results.forEach((task) => {
-            sendNotification(task);
-          });
-        }
-      }, 10000);
     } else {
       res.json({ detail: "Login failed" });
     }
@@ -59,37 +45,6 @@ const loginUser = async (req, res) => {
     console.error(error);
   }
 };
-
-const sendNotification = async (task) => {
-  notifier.notify({
-    title: "Tarea pendiente",
-    message: task.title,
-    icon: path.join(__dirname, "../img/list.png"),
-    image: path.join(__dirname, "../img/list.png"),
-    sound: true,
-    wait: true,
-  });
-  const [rows] = await pool.query("UPDATE todos SET notified = 1 WHERE id=?", [
-    task.id,
-  ]);
-};
-
-// Función para abrir o redirigir a una URL
-const openOrRedirect = (url) => {
-  openurl.exists(url, (err, isExists) => {
-    if (isExists) {
-      openurl.open(url);
-    } else {
-      openurl.open(url, { newInstance: true });
-    }
-  });
-};
-
-// Configuramos el evento 'click' de la notificación
-notifier.on("click", function () {
-  // Abrimos la página web en el navegador
-  openOrRedirect("http://localhost:3000");
-});
 
 module.exports = {
   signupUser,
