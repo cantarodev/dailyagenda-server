@@ -1,7 +1,6 @@
 const app = require("express");
 const {
   getTodos,
-  isCompletedTodo,
   createTodo,
   updateTodo,
   deleteTodo,

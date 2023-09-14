@@ -23,7 +23,7 @@ const getTodos = async (req, res) => {
     if (rows.length > 0) {
       setInterval(async () => {
         const [results] = await pool.query(
-          "SELECT * FROM todos WHERE user_email = ? AND date <= NOW()",
+          "SELECT * FROM todos WHERE user_email = ? AND date <= UTC_TIMESTAMP()",
           [userEmail]
         );
         if (results.length > 0) {
@@ -48,13 +48,16 @@ const getTodos = async (req, res) => {
 const createTodo = async (req, res) => {
   const { user_email, title, progress, date } = req.body;
   const id = uuidv4();
-  const originalDate = moment(date, "DD/MM/YYYY HH:mm:ss");
-  const desiredDate = originalDate.format("YYYY-MM-DD HH:mm:ss");
+  const currentDate = new Date(date);
+  currentDate.setSeconds(0);
+  currentDate.setMilliseconds(0);
+
+  const modifiedDate = currentDate.toISOString();
 
   try {
     const newToDo = await pool.query(
       "INSERT INTO todos(id, user_email, title, progress, date) VALUES(?, ?, ?, ?, ?)",
-      [id, user_email, title, progress, desiredDate]
+      [id, user_email, title, progress, modifiedDate]
     );
     res.json(newToDo);
   } catch (error) {
@@ -67,12 +70,16 @@ const updateTodo = async (req, res) => {
   const { id } = req.params;
   const { user_email, title, progress, notified, status, date } = req.body;
 
-  const originalDate = moment(date, "DD/MM/YYYY HH:mm:ss");
-  const desiredDate = originalDate.format("YYYY-MM-DD HH:mm:ss");
+  const desiredDate = new Date(date);
+  desiredDate.setSeconds(0);
+  desiredDate.setMilliseconds(0);
+  const modifiedDate = desiredDate.toISOString();
+
+  const compareDate = moment(modifiedDate).format("YYYY-MM-DD HH:mm:ss");
   const currentDate = moment();
   try {
     let changeNotified =
-      Number(progress) < 100 && currentDate.isBefore(desiredDate)
+      Number(progress) < 100 && currentDate.isBefore(compareDate)
         ? 0
         : notified;
     let changeStatus =
@@ -89,7 +96,7 @@ const updateTodo = async (req, res) => {
         progress,
         changeNotified,
         changeStatus,
-        desiredDate,
+        modifiedDate,
         id,
       ]
     );
