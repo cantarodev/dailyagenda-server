@@ -1,9 +1,6 @@
-const pool = require("../database/database.js"); // módulo - conexiones a la database
+const pool = require("../database/database.js");
 const moment = require("moment");
 const { v4: uuidv4 } = require("uuid");
-const notifier = require("node-notifier");
-const path = require("path");
-const opn = require("opn");
 
 // get all todos
 const getTodos = async (req, res) => {
@@ -19,28 +16,8 @@ const getTodos = async (req, res) => {
       [...valueConditions]
     );
     res.json(rows);
-
-    if (rows.length > 0) {
-      setInterval(async () => {
-        const [results] = await pool.query(
-          "SELECT * FROM todos WHERE user_email = ? AND date <= UTC_TIMESTAMP()",
-          [userEmail]
-        );
-        if (results.length > 0) {
-          results.forEach((task) => {
-            changeStatusTodo(task);
-          });
-
-          results
-            .filter((task) => task.notified === 0)
-            .forEach((task) => {
-              sendNotification(task);
-            });
-        }
-      }, 10000);
-    }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -51,7 +28,7 @@ const createTodo = async (req, res) => {
   const currentDate = new Date(date);
   currentDate.setSeconds(0);
   currentDate.setMilliseconds(0);
-
+  console.log(user_email);
   const modifiedDate = currentDate.toISOString();
 
   try {
@@ -113,7 +90,7 @@ const deleteTodo = async (req, res) => {
     const deleteToDo = pool.query("DELETE FROM todos WHERE id=?", [id]);
     res.json(deleteToDo);
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
@@ -123,43 +100,7 @@ const deleteTodoAll = async (req, res) => {
     const deleteToDo = pool.query("DELETE FROM todos");
     res.json(deleteToDo);
   } catch (error) {
-    console.log(error);
-  }
-};
-
-const sendNotification = async (task) => {
-  notifier.notify({
-    title: "Tarea pendiente",
-    message: task.title,
-    icon: path.join(__dirname, "../img/list.png"),
-    image: path.join(__dirname, "../img/list.png"),
-    sound: true,
-    wait: true,
-  });
-  await pool.query("UPDATE todos SET notified = 1 WHERE id=?", [task.id]);
-};
-
-// Función para abrir o redirigir a una URL
-const openOrRedirect = (url) => {
-  opn(url, { wait: true }).catch((err) => {
-    console.error(err);
-  });
-};
-
-// Configuramos el evento 'click' de la notificación
-notifier.on("click", function () {
-  // Abrimos la página web en el navegador
-  openOrRedirect("http://localhost:3000");
-});
-
-const changeStatusTodo = async (task) => {
-  try {
-    await pool.query(
-      "UPDATE todos SET status = 'in progress' WHERE id=? AND progress < 100",
-      [task.id]
-    );
-  } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 

@@ -1,18 +1,18 @@
-const { PORT } = require("./config.js");
-const express = require("express");
-const app = express();
-const routes = require("./routes/index.route");
-const cors = require("cors");
+require("dotenv").config();
+const app = require("./app");
+const sockets = require("./socket/socket");
 
-app.use(
-  express.urlencoded({
-    extended: true,
-  })
-);
+const { Server } = require("socket.io");
+const http = require("http");
 
-app.use(cors());
-app.use(express.json());
+const { PORT, FRONT_URL } = require("./config/config");
 
-app.use("/api/v1", routes);
+const server = http.createServer(app);
+server.listen(PORT, () => console.log(`Server runnning on ${PORT}`));
 
-app.listen(PORT, () => console.log(`Server runnning on ${PORT}`));
+const io = new Server(server, {
+  cors: {
+    origin: FRONT_URL,
+  },
+});
+sockets(io);

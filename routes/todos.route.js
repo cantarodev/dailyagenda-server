@@ -1,4 +1,6 @@
 const app = require("express");
+const verifyToken = require("../middlewares/token.middleware.js");
+
 const {
   getTodos,
   createTodo,
@@ -9,14 +11,14 @@ const {
 
 const router = app.Router();
 
-router.get("/:userEmail/:status", getTodos);
+router.get("/:userEmail/:status", verifyToken, getTodos);
 
-router.post("/", createTodo);
+router.post("/", verifyToken, createTodo);
 
-router.put("/:id", updateTodo);
+router.put("/:id", verifyToken, updateTodo);
 
-router.delete("/:id", deleteTodo);
+router.delete("/:id", verifyToken, deleteTodo);
 
-router.delete("/", deleteTodoAll);
+router.delete("/", verifyToken, deleteTodoAll);
 
 module.exports = router;
