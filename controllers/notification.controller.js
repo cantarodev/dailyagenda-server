@@ -10,7 +10,6 @@ const {
 const joinUserSocket = (io, socket) => {
   socket.on("subscribeToTasks", (userEmail) => {
     socket.join(userEmail);
-    console.log("ahora");
     socket.emit("successfulSubscription", true);
   });
 };
