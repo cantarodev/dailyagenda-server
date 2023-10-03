@@ -49,9 +49,8 @@ const loginUser = async (req, res) => {
     const blockedUntil = rows[0].blocked_until;
     if (blockedUntil && blockedUntil > new Date()) {
       return res.json({
-        detail: `Account is blocked until ${moment(blockedUntil).format(
-          "DD-MM-YYYY HH:mm:ss A"
-        )}`,
+        detail: "Account is blocked until",
+        lockDate: blockedUntil,
       });
     }
 
