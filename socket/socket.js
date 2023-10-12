@@ -7,7 +7,7 @@ const {
 const sockets = (io) => {
   io.on("connection", (socket) => {
     console.log("New user connected");
-    joinUserSocket(io, socket);
+    joinUserSocket(socket);
     getNotification(io, socket);
     getTodos(io, socket);
 

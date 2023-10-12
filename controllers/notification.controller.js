@@ -7,15 +7,15 @@ const {
   changeNotifiedTodo,
 } = require("../utils/notification.util");
 
-const joinUserSocket = (io, socket) => {
-  socket.on("subscribeToTasks", (userEmail) => {
+const joinUserSocket = (socket) => {
+  socket.on("joinUser", (userEmail) => {
     socket.join(userEmail);
-    socket.emit("successfulSubscription", true);
   });
 };
 
 const getNotification = (io, socket) => {
   socket.on("notification", (userEmail) => {
+    console.log("notification");
     const checkNotifications = async () => {
       try {
         const [results] = await pool.query(
@@ -44,7 +44,7 @@ const getNotification = (io, socket) => {
             const now = moment();
             const date = moment(task.date);
             if (now >= date) {
-              io.to(task.user_email).emit("changeStatusProcess", true);
+              io.to(task.user_email).emit("changeStatusProcess");
               sendNotification(task);
               changeNotifiedTodo(task.id);
               changeStatusTodo(task.id);
