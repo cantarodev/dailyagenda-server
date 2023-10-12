@@ -28,7 +28,6 @@ const createTodo = async (req, res) => {
   const currentDate = new Date(date);
   currentDate.setSeconds(0);
   currentDate.setMilliseconds(0);
-  console.log(user_email);
   const modifiedDate = currentDate.toISOString();
 
   try {

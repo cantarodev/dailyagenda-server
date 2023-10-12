@@ -38,14 +38,13 @@ const getNotification = (io, socket) => {
 
           if (taskPreNotifiedIds.length > 0) {
             changePreNotifiedTodo(taskPreNotifiedIds);
-            console.log("tasks", taskPreNotifiedIds.length);
           }
 
           tasksToSend.forEach((task, index) => {
             const now = moment();
             const date = moment(task.date);
             if (now >= date) {
-              io.to(task.user_email).emit("isTaskProcess", true);
+              io.to(task.user_email).emit("changeStatusProcess", true);
               sendNotification(task);
               changeNotifiedTodo(task.id);
               changeStatusTodo(task.id);
