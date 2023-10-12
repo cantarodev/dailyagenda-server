@@ -21,10 +21,17 @@ const signupUser = async (req, res) => {
   const salt = bcrypt.genSaltSync(10);
   const hashedPassword = bcrypt.hashSync(password, salt);
   try {
-    const signUp = await pool.query(
-      `INSERT INTO users(email, hashed_password) VALUES(?, ?)`,
-      [email, hashedPassword]
-    );
+    const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
+      email,
+    ]);
+
+    if (rows.length > 0) return res.json({ detail: "User already exists" });
+
+    await pool.query(`INSERT INTO users(email, hashed_password) VALUES(?, ?)`, [
+      email,
+      hashedPassword,
+    ]);
+
     const token = jwt.sign({ email }, TOKEN_SECRET_KEY, {
       expiresIn: "1hr",
     });
