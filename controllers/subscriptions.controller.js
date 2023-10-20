@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require("uuid");
 const createSubscription = async (req, res) => {
   const { userEmail, subscription } = req.body;
   const id = uuidv4();
-
   try {
     const [existingSubscription] = await pool.query(
       "SELECT * FROM subscriptions WHERE user_email = ? AND endpoint = ?",
@@ -16,9 +15,6 @@ const createSubscription = async (req, res) => {
         "INSERT INTO subscriptions(id, user_email, endpoint) VALUES(?, ?, ?)",
         [id, userEmail, JSON.stringify(subscription)]
       );
-      res.status(200).send("Subscription saved successfully");
-    } else {
-      res.status(404).send("Subscription already exists");
     }
   } catch (error) {
     console.error(error);

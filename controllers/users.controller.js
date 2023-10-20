@@ -33,7 +33,7 @@ const signupUser = async (req, res) => {
     ]);
 
     const token = jwt.sign({ email }, TOKEN_SECRET_KEY, {
-      expiresIn: "1hr",
+      expiresIn: "24hr",
     });
 
     res.status(200).json({ email, token });
@@ -46,6 +46,7 @@ const signupUser = async (req, res) => {
 // login user
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  console.log(email);
   try {
     const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
       email,
@@ -66,7 +67,7 @@ const loginUser = async (req, res) => {
     if (success) {
       await resetLoginAttempts(email);
       const token = jwt.sign({ email }, TOKEN_SECRET_KEY, {
-        expiresIn: "1hr",
+        expiresIn: "24h",
       });
       res.status(200).json({ email: rows[0].email, token });
     } else {

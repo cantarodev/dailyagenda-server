@@ -15,7 +15,6 @@ const joinUserSocket = (socket) => {
 
 const getNotification = (io, socket) => {
   socket.on("notification", (userEmail) => {
-    console.log("notification");
     const checkNotifications = async () => {
       try {
         const [results] = await pool.query(
@@ -44,7 +43,9 @@ const getNotification = (io, socket) => {
             const now = moment();
             const date = moment(task.date);
             if (now >= date) {
-              io.to(task.user_email).emit("changeStatusProcess");
+              io.to(task.user_email).emit("changeStatusProcess", {
+                changeStatus: true,
+              });
               sendNotification(task);
               changeNotifiedTodo(task.id);
               changeStatusTodo(task.id);
