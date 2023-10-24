@@ -1,4 +1,4 @@
-const pool = require("../database/database.js"); // módulo - conexiones a la database
+const pool = require("../database/database.js"); // m贸dulo - conexiones a la database
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
@@ -33,20 +33,19 @@ const signupUser = async (req, res) => {
     ]);
 
     const token = jwt.sign({ email }, TOKEN_SECRET_KEY, {
-      expiresIn: "24hr",
+      expiresIn: "12hr",
     });
 
-    res.status(200).json({ email, token });
+    return res.status(200).json({ email, token });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ detail: "The server does not respond!" });
+    return res.status(500).json({ detail: "The server does not respond!" });
   }
 };
 
 // login user
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
-  console.log(email);
   try {
     const [rows] = await pool.query("SELECT * FROM users WHERE email = ?", [
       email,
@@ -67,26 +66,26 @@ const loginUser = async (req, res) => {
     if (success) {
       await resetLoginAttempts(email);
       const token = jwt.sign({ email }, TOKEN_SECRET_KEY, {
-        expiresIn: "24h",
+        expiresIn: "12hr",
       });
-      res.status(200).json({ email: rows[0].email, token });
-    } else {
-      await incrementLoginAttempts(email);
-
-      const loginAttempts = await getLoginAttempts(email);
-      if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-        const blockedUntil = new Date(
-          Date.now() + Number(BLOCK_DURATION) * 60 * 1000
-        );
-        await lockAccount(email, blockedUntil);
-        return res.json({ detail: "Too many login attempts. Account locked." });
-      }
-
-      res.status(401).json({ detail: "Login failed" });
+      return res.status(200).json({ email: rows[0].email, token });
     }
+
+    await incrementLoginAttempts(email);
+    const loginAttempts = await getLoginAttempts(email);
+
+    if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+      const blockedUntil = new Date(
+        Date.now() + Number(BLOCK_DURATION) * 60 * 1000
+      );
+      await lockAccount(email, blockedUntil);
+      return res.json({ detail: "Too many login attempts. Account locked." });
+    }
+
+    return res.status(401).json({ detail: "Login failed" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ detail: "The server does not respond!" });
+    return res.status(500).json({ detail: "The server does not respond!" });
   }
 };
 
